@@ -1,35 +1,30 @@
-// 0. Install fingerpose npm install fingerpose
-// 1. Add Use State
-// 2. Import emojis and finger pose import * as fp from "fingerpose";
-// 3. Setup hook and emoji object
-// 4. Update detect function for gesture handling
-// 5. Add emoji display to the screen
-
-///////// NEW STUFF ADDED USE STATE
+//Sajal Gangrade 102003770
+//Tanmay Gupta 102003753
 import React, { useRef, useState, useEffect } from "react";
-///////// NEW STUFF ADDED USE STATE
-
-// import logo from './logo.svg';
 import * as tf from "@tensorflow/tfjs";
 import * as handpose from "@tensorflow-models/handpose";
 import Webcam from "react-webcam";
 import "./App.css";
 import { drawHand } from "./utilities";
+import { loveYouGesture } from "./One";
+import { loveYouGesture2 } from "./Two";
 
-///////// NEW STUFF IMPORTS
 import * as fp from "fingerpose";
 import victory from "./victory.png";
 import thumbs_up from "./thumbs_up.png";
-///////// NEW STUFF IMPORTS
+import one from "./One.png";
 
 function App() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
-  ///////// NEW STUFF ADDED STATE HOOK
   const [emoji, setEmoji] = useState(null);
-  const images = { thumbs_up: thumbs_up, victory: victory };
-  ///////// NEW STUFF ADDED STATE HOOK
+  const images = {
+    victory: victory,
+    thumbs_up: thumbs_up,
+    one: one,
+    two: victory,
+  };
 
   const runHandpose = async () => {
     const net = await handpose.load();
@@ -64,16 +59,16 @@ function App() {
       const hand = await net.estimateHands(video);
       // console.log(hand);
 
-      ///////// NEW STUFF ADDED GESTURE HANDLING
-
       if (hand.length > 0) {
         const GE = new fp.GestureEstimator([
           fp.Gestures.VictoryGesture,
           fp.Gestures.ThumbsUpGesture,
+          loveYouGesture,
+          loveYouGesture2,
         ]);
         const gesture = await GE.estimate(hand[0].landmarks, 4);
         if (gesture.gestures !== undefined && gesture.gestures.length > 0) {
-          // console.log(gesture.gestures);
+          console.log(gesture.gestures);
 
           const confidence = gesture.gestures.map(
             (prediction) => prediction.confidence
@@ -81,13 +76,11 @@ function App() {
           const maxConfidence = confidence.indexOf(
             Math.max.apply(null, confidence)
           );
-          // console.log(gesture.gestures[maxConfidence].name);
+          console.log(gesture.gestures[maxConfidence].name);
           setEmoji(gesture.gestures[maxConfidence].name);
           console.log(emoji);
         }
       }
-
-      ///////// NEW STUFF ADDED GESTURE HANDLING
 
       // Draw mesh
       const ctx = canvasRef.current.getContext("2d");
@@ -95,7 +88,9 @@ function App() {
     }
   };
 
-  useEffect(()=>{runHandpose()},[]);
+  useEffect(() => {
+    runHandpose();
+  }, []);
 
   return (
     <div className="App">
@@ -129,7 +124,7 @@ function App() {
             height: 480,
           }}
         />
-        {/* NEW STUFF */}
+
         {emoji !== null ? (
           <img
             src={images[emoji]}
@@ -147,8 +142,6 @@ function App() {
         ) : (
           ""
         )}
-
-        {/* NEW STUFF */}
       </header>
     </div>
   );
